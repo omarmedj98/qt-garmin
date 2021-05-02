@@ -75,6 +75,11 @@ protected:
 
     void timerEvent( QTimerEvent *event );
 
+private slots:
+    void on_pushButton_clicked();
+
+    void on_pushButton_2_clicked();
+
 private:
 
     Ui::MainWindow *m_ui;

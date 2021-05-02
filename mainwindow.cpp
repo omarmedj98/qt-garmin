@@ -145,14 +145,14 @@ void MainWindow::timerEvent( QTimerEvent *event )
     m_ui->widgetPFD->setIdentifier    ( "ILAX" , true );
     m_ui->widgetPFD->setDistance      ( dme    , true );
 
-    /*
+
     m_ui->widgetNAV->setHeading    ( heading   );
     m_ui->widgetNAV->setHeadingBug ( 0.0f );
     m_ui->widgetNAV->setCourse     ( 0.0f );
     m_ui->widgetNAV->setBearing    ( adf  , true );
     m_ui->widgetNAV->setDeviation  ( devH , true );
     m_ui->widgetNAV->setDistance   ( dme  , true );
-*/
+
 
     /*    m_ui->widgetSix->setRoll      ( roll      );
     m_ui->widgetSix->setPitch     ( pitch     );
@@ -165,8 +165,19 @@ void MainWindow::timerEvent( QTimerEvent *event )
     m_ui->widgetSix->setClimbRate ( climbRate );
 */
     m_ui->widgetPFD->update();
-   //m_ui->widgetNAV->update();
+   m_ui->widgetNAV->update();
    // m_ui->widgetSix->update();
 
     m_steps++;
+}
+
+void MainWindow::on_pushButton_clicked()
+{
+m_ui->stackedWidget->setCurrentIndex(1);
+}
+
+void MainWindow::on_pushButton_2_clicked()
+{
+    m_ui->stackedWidget->setCurrentIndex(0);
+
 }

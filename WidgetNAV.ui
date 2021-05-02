@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>679</width>
-    <height>585</height>
+    <width>603</width>
+    <height>509</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,10 +16,10 @@
   <widget class="QFrame" name="frameNAV">
    <property name="geometry">
     <rect>
-     <x>30</x>
-     <y>30</y>
-     <width>571</width>
-     <height>471</height>
+     <x>70</x>
+     <y>50</y>
+     <width>481</width>
+     <height>441</height>
     </rect>
    </property>
    <property name="frameShape">
@@ -31,9 +31,9 @@
    <widget class="qfi_NAV" name="graphicsNAV">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>10</y>
-      <width>521</width>
+      <x>50</x>
+      <y>40</y>
+      <width>391</width>
       <height>371</height>
      </rect>
     </property>

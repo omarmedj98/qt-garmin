@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>576</width>
-    <height>439</height>
+    <width>704</width>
+    <height>507</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,10 +16,10 @@
   <widget class="QFrame" name="framePFD">
    <property name="geometry">
     <rect>
-     <x>-10</x>
-     <y>10</y>
-     <width>541</width>
-     <height>401</height>
+     <x>100</x>
+     <y>30</y>
+     <width>491</width>
+     <height>431</height>
     </rect>
    </property>
    <property name="frameShape">
@@ -31,10 +31,10 @@
    <widget class="qfi_PFD" name="graphicsPFD">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>10</y>
-      <width>511</width>
-      <height>351</height>
+      <x>50</x>
+      <y>50</y>
+      <width>381</width>
+      <height>361</height>
      </rect>
     </property>
    </widget>

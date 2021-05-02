@@ -40,7 +40,7 @@ qfi_NAV::qfi_NAV( QWidget *parent ) :
 
     m_crsTextColor (   0, 255,   0 ),
     m_hdgTextColor ( 255,   0, 255 ),
-    m_dmeTextColor ( 255, 255, 255 ),
+    m_dmeTextColor (52, 152, 219 ),
 
     m_heading    ( 0.0f ),
     m_headingBug ( 0.0f ),
@@ -65,7 +65,7 @@ qfi_NAV::qfi_NAV( QWidget *parent ) :
 
     m_originalNavCtr ( 150.0f, 150.0f ),
 
-    m_originalCrsTextCtr (  50.0f,  25.0f ),
+    m_originalCrsTextCtr (  50.0f,  275.0f ),
     m_originalHdgTextCtr ( 250.0f,  25.0f ),
     m_originalDmeTextCtr ( 250.0f, 275.0f ),
 
@@ -248,7 +248,7 @@ void qfi_NAV::init()
     m_itemBack->setTransform( QTransform::fromScale( m_scaleX, m_scaleY ), true );
     m_scene->addItem( m_itemBack );
 
-    m_itemMask = new QGraphicsSvgItem( ":/qfi/images/nav/nav_mask.svg" );
+    m_itemMask = new QGraphicsSvgItem( ":/qfi/images/nav_test/nav/nav_mask1.svg" );
     m_itemMask->setCacheMode( QGraphicsItem::NoCache );
     m_itemMask->setZValue( m_maskZ );
     m_itemMask->setTransform( QTransform::fromScale( m_scaleX, m_scaleY ), true );
@@ -295,7 +295,7 @@ void qfi_NAV::init()
     m_itemHdgBug->setTransformOriginPoint( m_originalNavCtr );
     m_scene->addItem( m_itemHdgBug );
 
-    m_itemHdgScale = new QGraphicsSvgItem( ":/qfi/images/nav/nav_hdg_scale.svg" );
+    m_itemHdgScale = new QGraphicsSvgItem( ":/qfi/images/nav_test/nav/nav_hdg_scale1.svg" );
     m_itemHdgScale->setCacheMode( QGraphicsItem::NoCache );
     m_itemHdgScale->setZValue( m_hdgScaleZ );
     m_itemHdgScale->setTransform( QTransform::fromScale( m_scaleX, m_scaleY ), true );
@@ -431,7 +431,7 @@ void qfi_NAV::updateView()
     if ( m_distanceVisible )
     {
         m_itemDmeText->setVisible( true );
-        m_itemDmeText->setPlainText( QString("%1 NM").arg( m_distance, 5, 'f', 1, QChar(' ') ) );
+        m_itemDmeText->setPlainText( QString("%1 °").arg( m_distance, 5, 'f', 1, QChar(' ') ) );
     }
     else
     {
