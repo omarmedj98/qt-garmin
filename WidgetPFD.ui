@@ -16,10 +16,10 @@
   <widget class="QFrame" name="framePFD">
    <property name="geometry">
     <rect>
-     <x>100</x>
-     <y>30</y>
-     <width>491</width>
-     <height>431</height>
+     <x>10</x>
+     <y>10</y>
+     <width>581</width>
+     <height>441</height>
     </rect>
    </property>
    <property name="frameShape">
@@ -31,10 +31,10 @@
    <widget class="qfi_PFD" name="graphicsPFD">
     <property name="geometry">
      <rect>
-      <x>50</x>
-      <y>50</y>
-      <width>381</width>
-      <height>361</height>
+      <x>2</x>
+      <y>30</y>
+      <width>501</width>
+      <height>381</height>
      </rect>
     </property>
    </widget>

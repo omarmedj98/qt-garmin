@@ -5,14 +5,15 @@
 	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 5 300"
 	 style="enable-background:new 0 0 5 300;" xml:space="preserve">
 <style type="text/css">
-	.st0{fill:#FFFFFF;}
+	.st0{fill:#FDEBEA;}
 </style>
 <sodipodi:namedview  bordercolor="#666666" borderopacity="1.0" id="base" inkscape:current-layer="layer1" inkscape:cx="27.058205" inkscape:cy="211.68984" inkscape:document-units="px" inkscape:guide-bbox="true" inkscape:object-nodes="true" inkscape:object-paths="false" inkscape:pageopacity="0.0" inkscape:pageshadow="2" inkscape:snap-center="false" inkscape:snap-intersection-paths="true" inkscape:snap-midpoints="true" inkscape:snap-nodes="true" inkscape:snap-object-midpoints="false" inkscape:snap-smooth-nodes="false" inkscape:window-height="1011" inkscape:window-maximized="1" inkscape:window-width="1920" inkscape:window-x="-4" inkscape:window-y="-6" inkscape:zoom="1.9999999" pagecolor="#ffffff" showgrid="false" showguides="true">
 	</sodipodi:namedview>
 <g id="layer1" transform="translate(0,-752.36218)" inkscape:groupmode="layer" inkscape:label="Layer 1">
-	<path id="rect13753-40" inkscape:connector-curvature="0" class="st0" d="M0,766.4v1h5v-1H0z M0,781.4v1h5v-1H0z M0,796.4v1h5v-1H0
-		z M0,811.4v1h5v-1H0z M0,826.4v1h5v-1H0z M0,841.4v1h5v-1H0z M0,856.4v1h5v-1H0z M0,871.4v1h5v-1H0z M0,886.4v1h5v-1H0z M0,901.4v1
-		h5v-1H0z M0,916.4v1h5v-1H0z M0,931.4v1h5v-1H0z M0,946.4v1h5v-1H0z M0,961.4v1h5v-1H0z M0,976.4v1h5v-1H0z M0,991.4v1h5v-1H0z
-		 M0,1006.4v1h5v-1H0z M0,1021.4v1h5v-1H0z M0,1036.4v1h5v-1H0z M0,1051.4v1h5v-1H0z"/>
+	<path id="rect13753-40" inkscape:connector-curvature="0" class="st0" d="M-26,953.4h1v-5h-1V953.4z M-11,953.4h1v-5h-1V953.4z
+		 M4,953.4h1v-5H4V953.4z M19,953.4h1v-5h-1V953.4z M34,953.4h1v-5h-1V953.4z M49,953.4h1v-5h-1V953.4z M64,953.4h1v-5h-1V953.4z
+		 M79,953.4h1v-5h-1V953.4z M94,953.4h1v-5h-1V953.4z M109,953.4h1v-5h-1V953.4z M124,953.4h1v-5h-1V953.4z M139,953.4h1v-5h-1
+		V953.4z M154,953.4h1v-5h-1V953.4z M169,953.4h1v-5h-1V953.4z M184,953.4h1v-5h-1V953.4z M199,953.4h1v-5h-1V953.4z M214,953.4h1
+		v-5h-1V953.4z M229,953.4h1v-5h-1V953.4z M244,953.4h1v-5h-1V953.4z M259,953.4h1v-5h-1V953.4z"/>
 </g>
 </svg>

@@ -41,5 +41,13 @@
         <file>images/nav/nav_mask.svg</file>
         <file>images/nav_test/nav/nav_hdg_scale1.svg</file>
         <file>images/nav_test/nav/nav_mask1.svg</file>
+        <file>images/pfd/pfd_adi_mask 1.svg</file>
+        <file>images/pfd/pfd_hsi_frame.svg</file>
+        <file>images/pfd/pfd_hsi_scale.svg</file>
+        <file>images/pfd/pfd_mask1.svg</file>
+        <file>images/pfd/pfd_mask2.svg</file>
+        <file>images/pfd/Omar_2 (1).svg</file>
+        <file>images/pfd/pfd_adi_bar.svg</file>
+        <file>images/pfd/pfd_set.svg</file>
     </qresource>
 </RCC>

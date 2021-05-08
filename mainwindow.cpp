@@ -71,10 +71,10 @@ void MainWindow::timerEvent( QTimerEvent *event )
     float machNo    =  0.0f;
     float adf       =  0.0f;
     float dme       =  0.0f;
-/*
+
     if ( m_ui->pushButtonAuto->isChecked() )
     {
-      */
+
     alpha     =   20.0f * sin( m_realTime /  10.0f );
         beta      =   15.0f * sin( m_realTime /  10.0f );
         roll      =  180.0f * sin( m_realTime /  10.0f );
@@ -91,8 +91,8 @@ void MainWindow::timerEvent( QTimerEvent *event )
         machNo    = airspeed / 650.0f;
         adf       = -360.0f * sin( m_realTime /  50.0f );
         dme       =   99.0f * sin( m_realTime / 100.0f );
-/*
-        m_ui->spinBoxAlpha ->setValue( alpha     );
+
+       /* m_ui->spinBoxAlpha ->setValue( alpha     );
         m_ui->spinBoxBeta  ->setValue( beta      );
         m_ui->spinBoxRoll  ->setValue( roll      );
         m_ui->spinBoxPitch ->setValue( pitch     );
@@ -107,9 +107,9 @@ void MainWindow::timerEvent( QTimerEvent *event )
         m_ui->spinBoxPress ->setValue( pressure  );
         m_ui->spinBoxClimb ->setValue( climbRate );
         m_ui->spinBoxADF   ->setValue( adf       );
-        m_ui->spinBoxDME   ->setValue( dme       );
+        m_ui->spinBoxDME   ->setValue( dme       );*/
     }
-    else
+    /*else
     {
         alpha     = (float)m_ui->spinBoxAlpha ->value();
         beta      = (float)m_ui->spinBoxBeta  ->value();

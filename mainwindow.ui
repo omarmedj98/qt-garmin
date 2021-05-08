@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>702</width>
-    <height>508</height>
+    <width>855</width>
+    <height>589</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -27,17 +27,17 @@
      <widget class="WidgetPFD" name="widgetPFD" native="true">
       <property name="geometry">
        <rect>
-        <x>0</x>
-        <y>0</y>
-        <width>701</width>
-        <height>461</height>
+        <x>-210</x>
+        <y>-30</y>
+        <width>1061</width>
+        <height>651</height>
        </rect>
       </property>
       <widget class="QPushButton" name="pushButton">
        <property name="geometry">
         <rect>
-         <x>30</x>
-         <y>30</y>
+         <x>630</x>
+         <y>330</y>
          <width>61</width>
          <height>20</height>
         </rect>
@@ -46,31 +46,44 @@
         <string>HSI</string>
        </property>
       </widget>
+      <widget class="QPushButton" name="pushButtonAuto">
+       <property name="geometry">
+        <rect>
+         <x>360</x>
+         <y>330</y>
+         <width>71</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Auto</string>
+       </property>
+      </widget>
      </widget>
     </widget>
     <widget class="QWidget" name="page_2">
      <widget class="WidgetNAV" name="widgetNAV" native="true">
       <property name="geometry">
        <rect>
-        <x>0</x>
-        <y>0</y>
-        <width>641</width>
-        <height>441</height>
+        <x>-210</x>
+        <y>-30</y>
+        <width>1051</width>
+        <height>651</height>
        </rect>
       </property>
-     </widget>
-     <widget class="QPushButton" name="pushButton_2">
-      <property name="geometry">
-       <rect>
-        <x>80</x>
-        <y>470</y>
-        <width>71</width>
-        <height>21</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>PFD</string>
-      </property>
+      <widget class="QPushButton" name="pushButton_2">
+       <property name="geometry">
+        <rect>
+         <x>230</x>
+         <y>50</y>
+         <width>71</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>PFD</string>
+       </property>
+      </widget>
      </widget>
     </widget>
    </widget>

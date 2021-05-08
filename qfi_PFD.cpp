@@ -1,3 +1,10 @@
+
+#ifndef QFI_PFD_CPP
+#define QFI_PFD_CPP
+#endif
+
+////////////////////////////////////////////////////////////////////////////////
+
 #ifdef WIN32
 #   include <float.h>
 #endif
@@ -29,7 +36,7 @@ qfi_PFD::qfi_PFD( QWidget * parent ) :
 
     m_itemBack ( 0 ),
     m_itemMask ( 0 ),
-
+    m_itemMask1(0),
     m_scaleX ( 1.0f ),
     m_scaleY ( 1.0f ),
 
@@ -38,6 +45,7 @@ qfi_PFD::qfi_PFD( QWidget * parent ) :
 
     m_backZ (   0 ),
     m_maskZ ( 100 )
+
 {
     reset();
 
@@ -127,11 +135,17 @@ void qfi_PFD::init()
     m_itemBack->setTransform( QTransform::fromScale( m_scaleX, m_scaleY ), true );
     m_scene->addItem( m_itemBack );
 
-    m_itemMask = new QGraphicsSvgItem( ":/qfi/images/pfd/pfd_mask.svg" );
+    m_itemMask = new QGraphicsSvgItem( ":/qfi/images/pfd/pfd_mask1.svg" );
     m_itemMask->setCacheMode( QGraphicsItem::NoCache );
     m_itemMask->setZValue( m_maskZ );
     m_itemMask->setTransform( QTransform::fromScale( m_scaleX, m_scaleY ), true );
     m_scene->addItem( m_itemMask );
+
+    m_itemMask1 = new QGraphicsSvgItem( ":/qfi/images/pfd/pfd_mask2.svg" );
+    m_itemMask1->setCacheMode( QGraphicsItem::NoCache );
+    m_itemMask1->setZValue( 120 );
+    m_itemMask1->setTransform( QTransform::fromScale( m_scaleX, m_scaleY ), true );
+    m_scene->addItem( m_itemMask1 );
 
     centerOn( width() / 2.0f , height() / 2.0f );
 
@@ -184,6 +198,7 @@ qfi_PFD::ADI::ADI( QGraphicsScene * scene ) :
     m_itemMask   ( 0 ),
     m_itemScaleH ( 0 ),
     m_itemScaleV ( 0 ),
+    m_itemBar(0),
 
     m_roll          ( 0.0f ),
     m_pitch         ( 0.0f ),
@@ -195,6 +210,7 @@ qfi_PFD::ADI::ADI( QGraphicsScene * scene ) :
     m_barV          ( 0.0f ),
     m_dotH          ( 0.0f ),
     m_dotV          ( 0.0f ),
+    m_bar(0.0f),
 
     m_pathValid ( true ),
 
@@ -203,6 +219,7 @@ qfi_PFD::ADI::ADI( QGraphicsScene * scene ) :
     m_barVVisible ( true ),
     m_dotHVisible ( true ),
     m_dotVVisible ( true ),
+    m_barVisible(true),
 
     m_laddDeltaX_new     ( 0.0f ),
     m_laddDeltaX_old     ( 0.0f ),
@@ -212,6 +229,18 @@ qfi_PFD::ADI::ADI( QGraphicsScene * scene ) :
     m_laddBackDeltaY_old ( 0.0f ),
     m_laddDeltaY_new     ( 0.0f ),
     m_laddDeltaY_old     ( 0.0f ),
+
+
+     m_barDeltaX_new(0.0f),
+     m_barDeltaX_old(0.0f),
+     m_barBackDeltaX_new(0.0f),
+     m_barBackDeltaX_old(0.0f),
+     m_barBackDeltaY_new(0.0f),
+     m_barBackDeltaY_old(0.0f),
+     m_barDeltaY_new(0.0f),
+     m_barDeltaY_old(0.0f),
+
+
     m_slipDeltaX_new     ( 0.0f ),
     m_slipDeltaX_old     ( 0.0f ),
     m_slipDeltaY_new     ( 0.0f ),
@@ -241,6 +270,11 @@ qfi_PFD::ADI::ADI( QGraphicsScene * scene ) :
     m_originalPixPerDeg (   3.0f ),
     m_deltaLaddBack_max (  52.5f ),
     m_deltaLaddBack_min ( -52.5f ),
+
+    m_deltabar_max(52.5f),
+    m_deltabar_min(-52.5f),
+
+
     m_maxSlipDeflection (  20.0f ),
     m_maxTurnDeflection (  55.0f ),
     m_maxBarsDeflection (  40.0f ),
@@ -250,8 +284,9 @@ qfi_PFD::ADI::ADI( QGraphicsScene * scene ) :
     m_originalBackPos   (  45.0f ,  -85.0f ),
     m_originalLaddPos   ( 110.0f , -175.0f ),
     m_originalRollPos   (  45.0f ,   20.0f ),
-    m_originalSlipPos   ( 145.5f ,   68.5f ),
-    m_originalTurnPos   ( 142.5f ,  206.0f ),
+    m_originalMaskPos   ( 0.0f , -20.0f ),
+    m_originalSlipPos   ( 145.5f ,   215.0f ),
+    m_originalTurnPos   ( 142.5f ,  230.0f ),
     m_originalPathPos   ( 135.0f ,  113.0f ),
     m_originalBarHPos   ( 149.0f ,   85.0f ),
     m_originalBarVPos   ( 110.0f ,  124.0f ),
@@ -259,7 +294,8 @@ qfi_PFD::ADI::ADI( QGraphicsScene * scene ) :
     m_originalDotVPos   ( 213.0f ,  120.0f ),
     m_originalScaleHPos (   0.0f ,    0.0f ),
     m_originalScaleVPos (   0.0f ,    0.0f ),
-
+    m_originalBarPos(0.0f,0.0f),
+    m_barZ(100),
     m_backZ   ( 10 ),
     m_laddZ   ( 20 ),
     m_rollZ   ( 30 ),
@@ -299,7 +335,7 @@ void qfi_PFD::ADI::init( float scaleX, float scaleY )
     m_itemLadd->moveBy( m_scaleX * m_originalLaddPos.x(), m_scaleY * m_originalLaddPos.y() );
     m_scene->addItem( m_itemLadd );
 
-    m_itemRoll = new QGraphicsSvgItem( ":/qfi/images/pfd/pfd_adi_roll.svg" );
+   m_itemRoll = new QGraphicsSvgItem( ":/qfi/images/pfd/pfd_adi_roll.svg" );
     m_itemRoll->setCacheMode( QGraphicsItem::NoCache );
     m_itemRoll->setZValue( m_rollZ );
     m_itemRoll->setTransform( QTransform::fromScale( m_scaleX, m_scaleY ), true );
@@ -307,11 +343,19 @@ void qfi_PFD::ADI::init( float scaleX, float scaleY )
     m_itemRoll->moveBy( m_scaleX * m_originalRollPos.x(), m_scaleY * m_originalRollPos.y() );
     m_scene->addItem( m_itemRoll );
 
+    m_itemMask = new QGraphicsSvgItem( ":/qfi/images/pfd/pfd_adi_mask 1.svg" );
+    m_itemMask->setCacheMode( QGraphicsItem::NoCache );
+    m_itemMask->setZValue( m_maskZ );
+    m_itemMask->setTransform( QTransform::fromScale( m_scaleX, m_scaleY ), true );
+    m_itemMask->setTransformOriginPoint( m_originalAdiCtr - m_originalMaskPos );
+   m_itemMask->moveBy( m_scaleX * m_originalMaskPos.x(), m_scaleY * m_originalMaskPos.y() );
+    m_scene->addItem( m_itemMask );
+
     m_itemSlip = new QGraphicsSvgItem( ":/qfi/images/pfd/pfd_adi_slip.svg" );
     m_itemSlip->setCacheMode( QGraphicsItem::NoCache );
     m_itemSlip->setZValue( m_slipZ );
     m_itemSlip->setTransform( QTransform::fromScale( m_scaleX, m_scaleY ), true );
-    m_itemSlip->setTransformOriginPoint( m_originalAdiCtr - m_originalSlipPos );
+   // m_itemSlip->setTransformOriginPoint( m_originalAdiCtr - m_originalSlipPos );
     m_itemSlip->moveBy( m_scaleX * m_originalSlipPos.x(), m_scaleY * m_originalSlipPos.y() );
     m_scene->addItem( m_itemSlip );
 
@@ -336,7 +380,7 @@ void qfi_PFD::ADI::init( float scaleX, float scaleY )
     m_itemMark->moveBy( m_scaleX * m_originalPathPos.x(), m_scaleY * m_originalPathPos.y() );
     m_scene->addItem( m_itemMark );
 
-    m_itemBarH = new QGraphicsSvgItem( ":/qfi/images/pfd/pfd_adi_barh.svg" );
+   /* m_itemBarH = new QGraphicsSvgItem( ":/qfi/images/pfd/pfd_adi_barh.svg" );
     m_itemBarH->setCacheMode( QGraphicsItem::NoCache );
     m_itemBarH->setZValue( m_barsZ );
     m_itemBarH->setTransform( QTransform::fromScale( m_scaleX, m_scaleY ), true );
@@ -348,7 +392,19 @@ void qfi_PFD::ADI::init( float scaleX, float scaleY )
     m_itemBarV->setZValue( m_barsZ );
     m_itemBarV->setTransform( QTransform::fromScale( m_scaleX, m_scaleY ), true );
     m_itemBarV->moveBy( m_scaleX * m_originalBarVPos.x(), m_scaleY * m_originalBarVPos.y() );
-    m_scene->addItem( m_itemBarV );
+    m_scene->addItem( m_itemBarV );*/
+
+    m_itemBar = new QGraphicsSvgItem( ":/qfi/images/pfd/pfd_adi_bar.svg" );
+    m_itemBar->setCacheMode( QGraphicsItem::NoCache );
+    m_itemBar->setZValue( m_barZ );
+    m_itemBar->setTransform( QTransform::fromScale( m_scaleX, m_scaleY ), true );
+    m_itemBar->setTransformOriginPoint( m_originalAdiCtr - m_originalBarPos );
+    m_itemBar->moveBy( m_scaleX * m_originalBarPos.x(), m_scaleY * m_originalBarPos.y() );
+    m_scene->addItem( m_itemBar );
+
+
+
+
 
     m_itemDotH = new QGraphicsSvgItem( ":/qfi/images/pfd/pfd_adi_doth.svg" );
     m_itemDotH->setCacheMode( QGraphicsItem::NoCache );
@@ -378,11 +434,14 @@ void qfi_PFD::ADI::init( float scaleX, float scaleY )
     m_itemScaleV->moveBy( m_scaleX * m_originalScaleVPos.x(), m_scaleY * m_originalScaleVPos.y() );
     m_scene->addItem( m_itemScaleV );
 
-    m_itemMask = new QGraphicsSvgItem( ":/qfi/images/pfd/pfd_adi_mask.svg" );
-    m_itemMask->setCacheMode( QGraphicsItem::NoCache );
-    m_itemMask->setZValue( m_maskZ );
-    m_itemMask->setTransform( QTransform::fromScale( m_scaleX, m_scaleY ), true );
-    m_scene->addItem( m_itemMask );
+
+
+
+
+
+
+
+
 
     update( scaleX, scaleY );
 }
@@ -395,7 +454,7 @@ void qfi_PFD::ADI::update( float scaleX, float scaleY )
     m_scaleY = scaleY;
 
     float delta  = m_originalPixPerDeg * m_pitch;
-
+    float delta1 =m_originalPixPerDeg * m_barV*10 ;
     float roll_rad = M_PI * m_roll / 180.0f;
 
     float sinRoll = sin( roll_rad );
@@ -406,7 +465,7 @@ void qfi_PFD::ADI::update( float scaleX, float scaleY )
     updateRoll();
     updateSlipSkid( sinRoll, cosRoll );
     updateTurnRate();
-    updateBars();
+    updateBars(delta1,sinRoll,cosRoll);
     updateDots();
     updateFlightPath();
 
@@ -414,6 +473,15 @@ void qfi_PFD::ADI::update( float scaleX, float scaleY )
     m_laddDeltaY_old     = m_laddDeltaY_new;
     m_laddBackDeltaX_old = m_laddBackDeltaX_new;
     m_laddBackDeltaY_old = m_laddBackDeltaY_new;
+
+
+
+    m_barDeltaX_old     = m_barDeltaX_new;
+    m_barDeltaY_old     = m_barDeltaY_new;
+    m_barBackDeltaX_old = m_barBackDeltaX_new;
+    m_barBackDeltaY_old = m_barBackDeltaY_new;
+
+
     m_slipDeltaX_old     = m_slipDeltaX_new;
     m_slipDeltaY_old     = m_slipDeltaY_new;
     m_turnDeltaX_old     = m_turnDeltaX_new;
@@ -425,6 +493,7 @@ void qfi_PFD::ADI::update( float scaleX, float scaleY )
     m_barVDeltaY_old     = m_barVDeltaY_new;
     m_dotHDeltaX_old     = m_dotHDeltaX_new;
     m_dotVDeltaY_old     = m_dotVDeltaY_new;
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -567,7 +636,7 @@ void qfi_PFD::ADI::reset()
     m_itemMask   = 0;
     m_itemScaleH = 0;
     m_itemScaleV = 0;
-
+    m_itemBar=0;
     m_roll          = 0.0f;
     m_pitch         = 0.0f;
     m_angleOfAttack = 0.0f;
@@ -578,7 +647,7 @@ void qfi_PFD::ADI::reset()
     m_barV          = 0.0f;
     m_dotH          = 0.0f;
     m_dotV          = 0.0f;
-
+    m_bar=0.0f;
     m_pathValid = true;
 
     m_pathVisible = true;
@@ -586,7 +655,7 @@ void qfi_PFD::ADI::reset()
     m_barVVisible = true;
     m_dotHVisible = true;
     m_dotVVisible = true;
-
+    m_barVisible=true;
     m_laddDeltaX_new     = 0.0f;
     m_laddDeltaX_old     = 0.0f;
     m_laddBackDeltaX_new = 0.0f;
@@ -662,7 +731,8 @@ void qfi_PFD::ADI::updateLaddBack( float delta, float sinRoll, float cosRoll )
 
 void qfi_PFD::ADI::updateRoll()
 {
-    m_itemRoll->setRotation( - m_roll );
+   m_itemRoll->setRotation( - m_roll );
+   m_itemMask->setRotation( - m_roll );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -676,7 +746,8 @@ void qfi_PFD::ADI::updateSlipSkid( float sinRoll, float cosRoll )
     m_slipDeltaX_new =  m_scaleX * deltaSlip * cosRoll;
     m_slipDeltaY_new = -m_scaleY * deltaSlip * sinRoll;
 
-    m_itemSlip->moveBy( m_slipDeltaX_new - m_slipDeltaX_old, m_slipDeltaY_new - m_slipDeltaY_old );
+    m_itemSlip->moveBy( m_slipDeltaX_new - m_slipDeltaX_old, 0.0);
+                       // m_slipDeltaY_new - m_slipDeltaY_old );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -731,9 +802,41 @@ void qfi_PFD::ADI::updateFlightPath()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void qfi_PFD::ADI::updateBars()
+void qfi_PFD::ADI::updateBars(float delta1,float sinRoll,float cosRoll)
 {
-    if ( m_barVVisible )
+    m_itemBar->setVisible(true);
+    m_itemBar->setRotation( - m_barH*10.0 );
+
+    float deltaLaddBack1 = 0.0;
+
+    if ( delta1 > m_deltabar_max )
+    {
+        deltaLaddBack1 = m_deltabar_max;
+    }
+    else if ( delta1 < m_deltabar_min )
+    {
+        deltaLaddBack1 = m_deltabar_min;
+    }
+    else
+    {
+        deltaLaddBack1 = delta1;
+    }
+
+    m_barBackDeltaX_new = m_scaleX * deltaLaddBack1 * sinRoll;
+    m_barBackDeltaY_new = m_scaleY * deltaLaddBack1 * cosRoll;
+
+    m_itemBar->moveBy( m_barBackDeltaX_new - m_barBackDeltaX_old, m_barBackDeltaY_new - m_barBackDeltaY_old );
+
+
+
+
+
+
+
+
+/*
+
+     if ( m_barVVisible )
     {
         m_itemBarV->setVisible( true );
 
@@ -759,7 +862,7 @@ void qfi_PFD::ADI::updateBars()
     {
         m_itemBarH->setVisible( false );
         m_barHDeltaX_new = m_barHDeltaX_old;
-    }
+    }*/
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -818,14 +921,14 @@ qfi_PFD::ALT::ALT( QGraphicsScene * scene ) :
     m_itemFrame    ( 0 ),
     m_itemAltitude ( 0 ),
     m_itemPressure ( 0 ),
-
+    m_itemsetAltitude(0),
     m_frameTextColor ( 255, 255, 255 ),
-    m_pressTextColor (   0, 255,   0 ),
+    m_pressTextColor (   79,186,   232 ),
     m_labelsColor    ( 255, 255, 255 ),
-
+    m_setColor(255,192,203),
     m_altitude ( 0.0f ),
     m_pressure ( 0.0f ),
-
+    m_setaltitude(0.0f),
     m_pressureUnit ( 0 ),
 
     m_scale1DeltaY_new ( 0.0f ),
@@ -853,14 +956,14 @@ qfi_PFD::ALT::ALT( QGraphicsScene * scene ) :
     m_originalGroundPos   ( 231.5f ,  124.5f ),
     m_originalFramePos    ( 225.0f ,  110.0f ),
     m_originalAltitudeCtr ( 254.0f ,  126.0f ),
-    m_originalPressureCtr ( 254.0f ,  225.0f ),
-
+    m_originalPressureCtr ( 257.0f ,  225.0f ),
+    m_originalsetAlitudeCtr( 265.0f , 17.0f ),
     m_backZ      (  70 ),
     m_scaleZ     (  77 ),
     m_labelsZ    (  78 ),
     m_groundZ    (  79 ),
     m_frameZ     ( 110 ),
-    m_frameTextZ ( 120 )
+    m_frameTextZ ( 140 )
 {
 #   ifdef WIN32
     m_frameTextFont.setFamily( "Courier" );
@@ -895,14 +998,14 @@ void qfi_PFD::ALT::init( float scaleX, float scaleY )
     m_scaleY = scaleY;
 
     reset();
-
+/*
     m_itemBack = new QGraphicsSvgItem( ":/qfi/images/pfd/pfd_alt_back.svg" );
     m_itemBack->setCacheMode( QGraphicsItem::NoCache );
     m_itemBack->setZValue( m_backZ );
     m_itemBack->setTransform( QTransform::fromScale( m_scaleX, m_scaleY ), true );
     m_itemBack->moveBy( m_scaleX * m_originalBackPos.x(), m_scaleY * m_originalBackPos.y() );
     m_scene->addItem( m_itemBack );
-
+*/
     m_itemScale1 = new QGraphicsSvgItem( ":/qfi/images/pfd/pfd_alt_scale.svg" );
     m_itemScale1->setCacheMode( QGraphicsItem::NoCache );
     m_itemScale1->setZValue( m_scaleZ );
@@ -947,13 +1050,13 @@ void qfi_PFD::ALT::init( float scaleX, float scaleY )
                          m_scaleY * ( m_originalLabel3Y - m_itemLabel3->boundingRect().height() / 2.0f ) );
     m_scene->addItem( m_itemLabel3 );
 
-    m_itemGround = new QGraphicsSvgItem( ":/qfi/images/pfd/pfd_alt_ground.svg" );
+   /* m_itemGround = new QGraphicsSvgItem( ":/qfi/images/pfd/pfd_alt_ground.svg" );
     m_itemGround->setCacheMode( QGraphicsItem::NoCache );
     m_itemGround->setZValue( m_groundZ );
     m_itemGround->setTransform( QTransform::fromScale( m_scaleX, m_scaleY ), true );
     m_itemGround->moveBy( m_scaleX * m_originalGroundPos.x(), m_scaleY * m_originalGroundPos.y() );
     m_scene->addItem( m_itemGround );
-
+*/
     m_itemFrame = new QGraphicsSvgItem( ":/qfi/images/pfd/pfd_alt_frame.svg" );
     m_itemFrame->setCacheMode( QGraphicsItem::NoCache );
     m_itemFrame->setZValue( m_frameZ );
@@ -970,6 +1073,20 @@ void qfi_PFD::ALT::init( float scaleX, float scaleY )
     m_itemAltitude->moveBy( m_scaleX * ( m_originalAltitudeCtr.x() - m_itemAltitude->boundingRect().width()  / 2.0f ),
                            m_scaleY * ( m_originalAltitudeCtr.y() - m_itemAltitude->boundingRect().height() / 2.0f ) );
     m_scene->addItem( m_itemAltitude );
+
+    m_itemsetAltitude=new QGraphicsTextItem( QString( "    0" ) );
+    m_itemsetAltitude->setCacheMode( QGraphicsItem::NoCache );
+    m_itemsetAltitude->setZValue( m_frameTextZ );
+    m_itemsetAltitude->setDefaultTextColor( m_frameTextColor );
+    m_itemsetAltitude->setFont( m_frameTextFont );
+    m_itemsetAltitude->setTransform( QTransform::fromScale( m_scaleX, m_scaleY ), true );
+    m_itemsetAltitude->moveBy( m_scaleX * (  m_originalsetAlitudeCtr.x() - m_itemsetAltitude->boundingRect().width()  / 2.0f ),
+                            m_scaleY * (  m_originalsetAlitudeCtr.y() - m_itemsetAltitude->boundingRect().height() / 2.0f ) );
+    m_scene->addItem( m_itemsetAltitude );
+
+
+
+
 
     m_itemPressure = new QGraphicsTextItem( QString( "  STD  " ) );
     m_itemPressure->setCacheMode( QGraphicsItem::NoCache );
@@ -993,7 +1110,7 @@ void qfi_PFD::ALT::update( float scaleX, float scaleY )
 
     updateAltitude();
     updatePressure();
-
+    updatesetAltitude();
     m_scale1DeltaY_old = m_scale1DeltaY_new;
     m_scale2DeltaY_old = m_scale2DeltaY_new;
     m_groundDeltaY_old = m_groundDeltaY_new;
@@ -1010,7 +1127,13 @@ void qfi_PFD::ALT::setAltitude( float altitude )
     if      ( m_altitude <     0.0f ) m_altitude =     0.0f;
     else if ( m_altitude > 99999.0f ) m_altitude = 99999.0f;
 }
+void qfi_PFD::ALT::defineAltitude( float altitude )
+{
+    m_setaltitude = altitude;
 
+    if      ( m_setaltitude <     0.0f ) m_setaltitude =     0.0f;
+    else if ( m_setaltitude > 99999.0f ) m_setaltitude = 99999.0f;
+}
 ////////////////////////////////////////////////////////////////////////////////
 
 void qfi_PFD::ALT::setPressure( float pressure, int pressureUnit )
@@ -1036,14 +1159,14 @@ void qfi_PFD::ALT::reset()
     m_itemLabel1   = 0;
     m_itemLabel2   = 0;
     m_itemLabel3   = 0;
-    m_itemGround   = 0;
+   // m_itemGround   = 0;
     m_itemFrame    = 0;
     m_itemAltitude = 0;
     m_itemPressure = 0;
-
+    m_itemsetAltitude=0;
     m_altitude = 0.0f;
     m_pressure = 0.0f;
-
+    m_setaltitude=0.0f;
     m_pressureUnit = 0;
 
     m_scale1DeltaY_new = 0.0f;
@@ -1061,9 +1184,15 @@ void qfi_PFD::ALT::reset()
 void qfi_PFD::ALT::updateAltitude()
 {
     m_itemAltitude->setPlainText( QString("%1").arg(m_altitude, 5, 'f', 0, QChar(' ')) );
-
+//m_itemsetAltitude->setPlainText( QString("%1").arg(m_setaltitude, 5, 'f', 0, QChar(' ')) );
     updateScale();
     updateScaleLabels();
+}
+
+void qfi_PFD::ALT::updatesetAltitude()
+{
+  m_itemsetAltitude->setPlainText( QString("%1").arg(m_setaltitude, 5, 'f', 0, QChar(' ')) );
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1109,7 +1238,7 @@ void qfi_PFD::ALT::updateScale()
 
     m_itemScale1->moveBy( 0.0f, m_scale1DeltaY_new - m_scale1DeltaY_old );
     m_itemScale2->moveBy( 0.0f, m_scale2DeltaY_new - m_scale2DeltaY_old );
-    m_itemGround->moveBy( 0.0f, m_groundDeltaY_new - m_groundDeltaY_old );
+  //  m_itemGround->moveBy( 0.0f, m_groundDeltaY_new - m_groundDeltaY_old );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1141,11 +1270,22 @@ void qfi_PFD::ALT::updateScaleLabels()
     m_itemLabel2->moveBy( 0.0f, m_labelsDeltaY_new - m_labelsDeltaY_old );
     m_itemLabel3->moveBy( 0.0f, m_labelsDeltaY_new - m_labelsDeltaY_old );
 
-    if ( alt1 > 0.0f && alt1 <= 100000.0f )
+    if ( alt1 > 0.0f && alt1 <= 100000.0f  )
     {
         m_itemLabel1->setVisible( true );
+   //     m_itemLabel1->setDefaultTextColor( m_setColor );
+
         m_itemLabel1->setPlainText( QString("%1").arg(alt1, 5, 'f', 0, QChar(' ')) );
     }
+  else if(alt1==m_setaltitude){
+
+        m_itemLabel1->setVisible( true );
+        m_itemLabel1->setDefaultTextColor( m_setColor );
+
+        m_itemLabel1->setPlainText( QString("%1").arg(m_setaltitude, 5, 'f', 0, QChar(' ')) );
+
+    }
+
     else
     {
         m_itemLabel1->setVisible( false );
@@ -1156,6 +1296,14 @@ void qfi_PFD::ALT::updateScaleLabels()
         m_itemLabel2->setVisible( true );
         m_itemLabel2->setPlainText( QString("%1").arg(alt2, 5, 'f', 0, QChar(' ')) );
     }
+    else if(alt2==m_setaltitude){
+
+          m_itemLabel2->setVisible( true );
+          m_itemLabel2->setDefaultTextColor( m_setColor );
+
+          m_itemLabel2->setPlainText( QString("%1").arg(m_setaltitude, 5, 'f', 0, QChar(' ')) );
+
+      }
     else
     {
         m_itemLabel2->setVisible( false );
@@ -1166,10 +1314,30 @@ void qfi_PFD::ALT::updateScaleLabels()
         m_itemLabel3->setVisible( true );
         m_itemLabel3->setPlainText( QString("%1").arg(alt3, 5, 'f', 0, QChar(' ')) );
     }
+    else if(alt3==m_setaltitude){
+
+          m_itemLabel3->setVisible( true );
+          m_itemLabel3->setDefaultTextColor( m_setColor );
+
+          m_itemLabel3->setPlainText( QString("%1").arg(m_setaltitude, 5, 'f', 0, QChar(' ')) );
+
+      }
     else
     {
         m_itemLabel3->setVisible( false );
     }
+
+    /*if (alt1=m_setaltitude){
+        m_itemLabel1->setVisible( true );
+        m_itemLabel1->setDefaultTextColor( m_setColor );
+        m_itemLabel1->setPlainText( QString("%1").arg(alt1, 5, 'f', 0, QChar(' ')) );
+    }
+    else{
+
+        m_itemLabel1->setVisible(false);
+
+
+    }*/
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1194,6 +1362,7 @@ qfi_PFD::ASI::ASI( QGraphicsScene * scene ) :
     m_itemMachNo   ( 0 ),
 
     m_frameTextColor ( 255, 255, 255 ),
+    m_framemachColor(255, 61, 255),
     m_labelsColor    ( 255, 255, 255 ),
 
     m_airspeed ( 0.0f ),
@@ -1212,13 +1381,13 @@ qfi_PFD::ASI::ASI( QGraphicsScene * scene ) :
     m_originalPixPerSpd   (   1.5f ),
     m_originalScaleHeight ( 300.0f ),
     m_originalLabelsX     (  43.0f ),
-    m_originalLabel1Y     (  35.0f ),
-    m_originalLabel2Y     (  65.0f ),
-    m_originalLabel3Y     (  95.0f ),
-    m_originalLabel4Y     ( 125.0f ),
-    m_originalLabel5Y     ( 155.0f ),
-    m_originalLabel6Y     ( 185.0f ),
-    m_originalLabel7Y     ( 215.0f ),
+    m_originalLabel1Y     (  30.0f ),
+    m_originalLabel2Y     (  70.0f ),
+    m_originalLabel3Y     (  110.0f ),
+    m_originalLabel4Y     ( 150.0f ),
+    m_originalLabel5Y     ( 190.0f ),
+    m_originalLabel6Y     ( 230.0f ),
+    m_originalLabel7Y     ( 270.0f ),
 
     m_originalBackPos     ( 25.0f ,   37.5f ),
     m_originalScale1Pos   ( 56.0f , -174.5f ),
@@ -1266,14 +1435,14 @@ void qfi_PFD::ASI::init( float scaleX, float scaleY )
     m_scaleY = scaleY;
 
     reset();
-
+/*
     m_itemBack = new QGraphicsSvgItem( ":/qfi/images/pfd/pfd_asi_back.svg" );
     m_itemBack->setCacheMode( QGraphicsItem::NoCache );
     m_itemBack->setZValue( m_backZ );
     m_itemBack->setTransform( QTransform::fromScale( m_scaleX, m_scaleY ), true );
     m_itemBack->moveBy( m_scaleX * m_originalBackPos.x(), m_scaleY * m_originalBackPos.y() );
     m_scene->addItem( m_itemBack );
-
+*/
     m_itemScale1 = new QGraphicsSvgItem( ":/qfi/images/pfd/pfd_asi_scale.svg" );
     m_itemScale1->setCacheMode( QGraphicsItem::NoCache );
     m_itemScale1->setZValue( m_scaleZ );
@@ -1376,11 +1545,11 @@ void qfi_PFD::ASI::init( float scaleX, float scaleY )
                            m_scaleY * ( m_originalAirspeedCtr.y() - m_itemAirspeed->boundingRect().height() / 2.0f ) );
     m_scene->addItem( m_itemAirspeed );
 
-    m_itemMachNo = new QGraphicsTextItem( QString( ".000" ) );
+    m_itemMachNo = new QGraphicsTextItem( QString( "000" ) );
     m_itemMachNo->setCacheMode( QGraphicsItem::NoCache );
     m_itemMachNo->setZValue( m_frameTextZ );
     m_itemMachNo->setTextInteractionFlags( Qt::NoTextInteraction );
-    m_itemMachNo->setDefaultTextColor( m_frameTextColor );
+    m_itemMachNo->setDefaultTextColor( m_framemachColor );
     m_itemMachNo->setFont( m_frameTextFont );
     m_itemMachNo->setTransform( QTransform::fromScale( m_scaleX, m_scaleY ), true );
     m_itemMachNo->moveBy( m_scaleX * ( m_originalMachNoCtr.x() - m_itemMachNo->boundingRect().width()  / 2.0f ),
@@ -1462,7 +1631,7 @@ void qfi_PFD::ASI::updateAirspeed()
     if ( m_machNo < 1.0f )
     {
         float machNo = 1000.0f * m_machNo;
-        m_itemMachNo->setPlainText( QString(".%1").arg(machNo, 3, 'f', 0, QChar('0')) );
+        m_itemMachNo->setPlainText( QString("%1").arg(machNo, 3, 'f', 0, QChar('0')) );
     }
     else
     {
@@ -1628,28 +1797,79 @@ qfi_PFD::HSI::HSI( QGraphicsScene * scene ) :
     m_itemMarks     ( 0 ),
     m_itemFrameText ( 0 ),
 
+    m_itemScale1   ( 0 ),
+    m_itemScale2   ( 0 ),
+    m_itemLabel1   ( 0 ),
+    m_itemLabel2   ( 0 ),
+    m_itemLabel3   ( 0 ),
+    m_itemLabel4   ( 0 ),
+    m_itemLabel5   ( 0 ),
+    m_itemLabel6   ( 0 ),
+    m_itemLabel7   ( 0 ),
+    m_itemFrame    ( 0 ),
     m_frameTextColor ( 255, 255, 255 ),
-
+    m_labelsColor    ( 255, 255, 255 ),
     m_heading  ( 0.0f ),
 
     m_scaleX ( 1.0f ),
     m_scaleY ( 1.0f ),
 
+    m_scale1DeltaY_new ( 0.0f ),
+    m_scale1DeltaY_old ( 0.0f ),
+    m_scale2DeltaY_new ( 0.0f ),
+    m_scale2DeltaY_old ( 0.0f ),
+    m_labelsDeltaY_new ( 0.0f ),
+    m_labelsDeltaY_old ( 0.0f ),
+
+    m_originalPixPerSpd   (  3.0f ),
+    m_originalScaleHeight (60.0f ),
+
+
+    m_originalLabelsX     (  16.0f ),
+    m_originalLabel7Y     (5.0f ),
+    m_originalLabel6Y     (  65.0f ),
+    m_originalLabel5Y     (  95.0f ),
+    m_originalLabel4Y     ( 125.0f ),
+    m_originalLabel3Y     ( 155.0f ),
+    m_originalLabel2Y     ( 185.0f ),
+    m_originalLabel1Y     ( 215.0f ),
+
     m_originalHsiCtr       ( 150.0f , 345.0f ),
     m_originalBackPos      (  60.0f,  240.0f ),
     m_originalFacePos      (  45.0f , 240.0f ),
     m_originalMarksPos     ( 134.0f , 219.0f ),
-    m_originalFrameTextCtr ( 149.5f , 227.5f ),
-
+    m_originalFrameTextCtr ( 149.5f , 16.0f ),
+    m_originalScale1Pos   (56.0f , -174.5f ),
+    m_originalScale2Pos   ( 56.0f , -474.5f ),
     m_backZ      (  80 ),
     m_faceZ      (  90 ),
     m_marksZ     ( 110 ),
+    m_scaleZ(110),
+    m_labelsZ    (  110 ),
+    m_frameZ     ( 110 ),
     m_frameTextZ ( 120 )
 {
+#   ifdef WIN32
+
     m_frameTextFont.setFamily( "Courier" );
     m_frameTextFont.setPointSizeF( 10.0 );
     m_frameTextFont.setStretch( QFont::Condensed );
     m_frameTextFont.setWeight( QFont::Bold );
+    m_labelsFont.setFamily( "Courier" );
+    m_labelsFont.setPointSizeF( 7.0f );
+    m_labelsFont.setStretch( QFont::Condensed );
+    m_labelsFont.setWeight( QFont::Bold );
+#   else
+    m_frameTextFont.setFamily( "Courier" );
+    m_frameTextFont.setPointSizeF( 10.0f );
+    m_frameTextFont.setStretch( QFont::Condensed );
+    m_frameTextFont.setWeight( QFont::Bold );
+
+    m_labelsFont.setFamily( "Courier" );
+    m_labelsFont.setPointSizeF( 8.0f );
+    m_labelsFont.setStretch( QFont::Condensed );
+    m_labelsFont.setWeight( QFont::Bold );
+#   endif
 
     reset();
 }
@@ -1662,30 +1882,123 @@ void qfi_PFD::HSI::init( float scaleX, float scaleY )
     m_scaleY = scaleY;
 
     reset();
-
+/*
     m_itemBack = new QGraphicsSvgItem( ":/qfi/images/pfd/pfd_hsi_back.svg" );
     m_itemBack->setCacheMode( QGraphicsItem::NoCache );
     m_itemBack->setZValue( m_backZ );
     m_itemBack->setTransform( QTransform::fromScale( m_scaleX, m_scaleY ), true );
     m_itemBack->moveBy( m_scaleX * m_originalBackPos.x(), m_scaleY * m_originalBackPos.y() );
-    m_scene->addItem( m_itemBack );
-
-    m_itemFace = new QGraphicsSvgItem( ":/qfi/images/pfd/pfd_hsi_face.svg" );
+    m_scene->*/
+  /*  m_itemFace = new QGraphicsSvgItem( ":/qfi/images/pfd/pfd_hsi_face.svg" );
     m_itemFace->setCacheMode( QGraphicsItem::NoCache );
     m_itemFace->setZValue( m_faceZ );
     m_itemFace->setTransform( QTransform::fromScale( m_scaleX, m_scaleY ), true );
     m_itemFace->setTransformOriginPoint( m_originalHsiCtr - m_originalFacePos );
     m_itemFace->moveBy( m_scaleX * m_originalFacePos.x(), m_scaleY * m_originalFacePos.y() );
     m_scene->addItem( m_itemFace );
+*/
+    m_itemScale1 = new QGraphicsSvgItem( ":/qfi/images/pfd/pfd_hsi_scale.svg" );
+    m_itemScale1->setCacheMode( QGraphicsItem::NoCache );
+    m_itemScale1->setZValue( m_scaleZ );
+    m_itemScale1->setTransform( QTransform::fromScale( m_scaleX, m_scaleY ), true );
+    m_itemScale1->moveBy( m_scaleX * m_originalScale1Pos.x(), m_scaleY * m_originalScale1Pos.y() );
+    m_scene->addItem( m_itemScale1 );
+
+    m_itemScale2 = new QGraphicsSvgItem( ":/qfi/images/pfd/pfd_hsi_scale.svg" );
+    m_itemScale2->setCacheMode( QGraphicsItem::NoCache );
+    m_itemScale2->setZValue( m_scaleZ );
+    m_itemScale2->setTransform( QTransform::fromScale( m_scaleX, m_scaleY ), true );
+    m_itemScale2->moveBy( m_scaleX * m_originalScale2Pos.x(), m_scaleY * m_originalScale2Pos.y() );
+    m_scene->addItem( m_itemScale2 );
+
+    m_itemLabel1 = new QGraphicsTextItem( QString( "999" ) );
+    m_itemLabel1->setCacheMode( QGraphicsItem::NoCache );
+    m_itemLabel1->setZValue( m_labelsZ );
+    m_itemLabel1->setDefaultTextColor( m_labelsColor );
+    m_itemLabel1->setFont( m_labelsFont );
+    m_itemLabel1->setTransform( QTransform::fromScale( m_scaleX, m_scaleY ), true );
+    m_itemLabel1->moveBy( m_scaleX * (    m_originalLabel1Y - m_itemLabel1->boundingRect().width()  / 2.0f ),
+                         m_scaleY * (    m_originalLabelsX - m_itemLabel1->boundingRect().height() / 2.0f ) );
+    m_scene->addItem( m_itemLabel1 );
+
+    m_itemLabel2 = new QGraphicsTextItem( QString( "999" ) );
+    m_itemLabel2->setCacheMode( QGraphicsItem::NoCache );
+    m_itemLabel2->setZValue( m_labelsZ );
+    m_itemLabel2->setDefaultTextColor( m_labelsColor );
+    m_itemLabel2->setFont( m_labelsFont );
+    m_itemLabel2->setTransform( QTransform::fromScale( m_scaleX, m_scaleY ), true );
+    m_itemLabel2->moveBy( m_scaleX * (   m_originalLabel2Y - m_itemLabel2->boundingRect().width()  / 2.0f ),
+                         m_scaleY * (   m_originalLabelsX - m_itemLabel2->boundingRect().height() / 2.0f ) );
+    m_scene->addItem( m_itemLabel2 );
+
+    m_itemLabel3 = new QGraphicsTextItem( QString( "999" ) );
+    m_itemLabel3->setCacheMode( QGraphicsItem::NoCache );
+    m_itemLabel3->setZValue( m_labelsZ );
+    m_itemLabel3->setDefaultTextColor( m_labelsColor );
+    m_itemLabel3->setFont( m_labelsFont );
+    m_itemLabel3->setTransform( QTransform::fromScale( m_scaleX, m_scaleY ), true );
+    m_itemLabel3->moveBy( m_scaleX * (   m_originalLabel3Y - m_itemLabel3->boundingRect().width()  / 2.0f ),
+                         m_scaleY * (   m_originalLabelsX- m_itemLabel3->boundingRect().height() / 2.0f ) );
+    m_scene->addItem( m_itemLabel3 );
+
+    m_itemLabel4 = new QGraphicsTextItem( QString( "999" ) );
+    m_itemLabel4->setCacheMode( QGraphicsItem::NoCache );
+    m_itemLabel4->setZValue( m_labelsZ );
+    m_itemLabel4->setDefaultTextColor( m_labelsColor );
+    m_itemLabel4->setFont( m_labelsFont );
+    m_itemLabel4->setTransform( QTransform::fromScale( m_scaleX, m_scaleY ), true );
+    m_itemLabel4->moveBy( m_scaleX * (   m_originalLabel4Y- m_itemLabel4->boundingRect().width()  / 2.0f ),
+                         m_scaleY * (   m_originalLabelsX - m_itemLabel4->boundingRect().height() / 2.0f ) );
+    m_scene->addItem( m_itemLabel4 );
+
+    m_itemLabel5 = new QGraphicsTextItem( QString( "999" ) );
+    m_itemLabel5->setCacheMode( QGraphicsItem::NoCache );
+    m_itemLabel5->setZValue( m_labelsZ );
+    m_itemLabel5->setDefaultTextColor( m_labelsColor );
+    m_itemLabel5->setFont( m_labelsFont );
+    m_itemLabel5->setTransform( QTransform::fromScale( m_scaleX, m_scaleY ), true );
+    m_itemLabel5->moveBy( m_scaleX * (   m_originalLabel5Y- m_itemLabel5->boundingRect().width()  / 2.0f ),
+                         m_scaleY * (   m_originalLabelsX- m_itemLabel5->boundingRect().height() / 2.0f ) );
+    m_scene->addItem( m_itemLabel5 );
+
+    m_itemLabel6 = new QGraphicsTextItem( QString( "999" ) );
+    m_itemLabel6->setCacheMode( QGraphicsItem::NoCache );
+    m_itemLabel6->setZValue( m_labelsZ );
+    m_itemLabel6->setDefaultTextColor( m_labelsColor );
+    m_itemLabel6->setFont( m_labelsFont );
+    m_itemLabel6->setTransform( QTransform::fromScale( m_scaleX, m_scaleY ), true );
+    m_itemLabel6->moveBy( m_scaleX * (    m_originalLabel6Y - m_itemLabel6->boundingRect().width()  / 2.0f ),
+                         m_scaleY * (   m_originalLabelsX - m_itemLabel6->boundingRect().height() / 2.0f ) );
+    m_scene->addItem( m_itemLabel6 );
+
+    m_itemLabel7 = new QGraphicsTextItem( QString( "999" ) );
+    m_itemLabel7->setCacheMode( QGraphicsItem::NoCache );
+    m_itemLabel7->setZValue( m_labelsZ );
+    m_itemLabel7->setDefaultTextColor( m_labelsColor );
+    m_itemLabel7->setFont( m_labelsFont );
+    m_itemLabel7->setTransform( QTransform::fromScale( m_scaleX, m_scaleY ), true );
+    m_itemLabel7->moveBy( m_scaleX * (   m_originalLabel7Y - m_itemLabel7->boundingRect().width()  / 2.0f ),
+                         m_scaleY * (    m_originalLabelsX- m_itemLabel7->boundingRect().height() / 2.0f ) );
+    m_scene->addItem( m_itemLabel7 );
+
+  /*  m_itemFrame = new QGraphicsSvgItem( ":/qfi/images/pfd/pfd_hsi_frame.svg" );
+    m_itemFrame->setCacheMode( QGraphicsItem::NoCache );
+    m_itemFrame->setZValue( 150 );
+    m_itemFrame->setTransform( QTransform::fromScale( m_scaleX, m_scaleY ), true );
+    m_itemFrame->moveBy( m_scaleX * m_originalFramePos.x(), m_scaleY * m_originalFramePos.y() );
+    m_scene->addItem( m_itemFrame );*/
 
     m_itemMarks = new QGraphicsSvgItem( ":/qfi/images/pfd/pfd_hsi_marks.svg" );
     m_itemMarks->setCacheMode( QGraphicsItem::NoCache );
     m_itemMarks->setZValue( m_marksZ );
     m_itemMarks->setTransform( QTransform::fromScale( m_scaleX, m_scaleY ), true );
     m_itemMarks->moveBy( m_scaleX * m_originalMarksPos.x(), m_scaleY * m_originalMarksPos.y() );
+   // m_itemMarks->setTransform( QTransform::fromScale( m_scaleX, m_scaleY ), true );
+  //  m_itemMarks->moveBy( m_scaleX * ( m_originalFrameTextCtr.x() - m_itemFrameText->boundingRect().width()  / 2.0f ),
+                      //    m_scaleY * ( m_originalFrameTextCtr.y() - m_itemFrameText->boundingRect().height() / 2.0f ) );
     m_scene->addItem( m_itemMarks );
 
-    m_itemFrameText = new QGraphicsTextItem( QString( "000" ) );
+ m_itemFrameText = new QGraphicsTextItem( QString( "000" ) );
     m_itemFrameText->setCacheMode( QGraphicsItem::NoCache );
     m_itemFrameText->setZValue( m_frameTextZ );
     m_itemFrameText->setTextInteractionFlags( Qt::NoTextInteraction );
@@ -1699,7 +2012,6 @@ void qfi_PFD::HSI::init( float scaleX, float scaleY )
     update( scaleX, scaleY );
 }
 
-////////////////////////////////////////////////////////////////////////////////
 
 void qfi_PFD::HSI::update( float scaleX, float scaleY )
 {
@@ -1707,6 +2019,10 @@ void qfi_PFD::HSI::update( float scaleX, float scaleY )
     m_scaleY = scaleY;
 
     updateHeading();
+
+    m_scale1DeltaY_old = m_scale1DeltaY_new;
+    m_scale2DeltaY_old = m_scale2DeltaY_new;
+    m_labelsDeltaY_old = m_labelsDeltaY_new;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1734,19 +2050,169 @@ void qfi_PFD::HSI::reset()
     m_itemFace      = 0;
     m_itemMarks     = 0;
     m_itemFrameText = 0;
-
+    m_itemScale1   = 0;
+    m_itemScale2   = 0;
+    m_itemLabel1   = 0;
+    m_itemLabel2   = 0;
+    m_itemLabel3   = 0;
+    m_itemLabel4   = 0;
+    m_itemLabel5   = 0;
+    m_itemLabel6   = 0;
+    m_itemLabel7   = 0;
     m_heading  = 0.0f;
+    m_itemFrame    = 0;
+
+
+    m_scale1DeltaY_new = 0.0f;
+    m_scale1DeltaY_old = 0.0f;
+    m_scale2DeltaY_new = 0.0f;
+    m_scale2DeltaY_old = 0.0f;
+    m_labelsDeltaY_new = 0.0f;
+    m_labelsDeltaY_old = 0.0f;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 void qfi_PFD::HSI::updateHeading()
 {
-    m_itemFace->setRotation( - m_heading );
+//    m_itemFace->setRotation( - m_heading );
 
     float fHeading = floor( m_heading + 0.5f );
 
     m_itemFrameText->setPlainText( QString("%1").arg(fHeading, 3, 'f', 0, QChar('0')) );
+    updateScale();
+    updateScaleLabels();
+}
+////////////////////////////////////////////////////////////////////////////////
+void qfi_PFD::HSI::updateScale()
+{
+    m_scale1DeltaY_new = m_scaleX * m_originalPixPerSpd * m_heading ;
+    m_scale2DeltaY_new = m_scale1DeltaY_new;
+
+    float scaleSingleHeight = m_scaleX * m_originalScaleHeight;
+    float scaleDoubleHeight = m_scaleX * m_originalScaleHeight * 2.0f;
+
+    while ( m_scale1DeltaY_new > scaleSingleHeight + m_scaleX * 2.5f )
+    {
+        m_scale1DeltaY_new = m_scale1DeltaY_new - scaleDoubleHeight;
+    }
+
+    while ( m_scale2DeltaY_new > scaleDoubleHeight + m_scaleX *2.5f )
+    {
+        m_scale2DeltaY_new = m_scale2DeltaY_new - scaleDoubleHeight;
+    }
+
+    m_itemScale1->moveBy(  m_scale1DeltaY_new - m_scale1DeltaY_old,0.0f );
+    m_itemScale2->moveBy(  m_scale2DeltaY_new - m_scale2DeltaY_old,0.0f );
+}
+void qfi_PFD::HSI::updateScaleLabels()
+{
+    m_labelsDeltaY_new = m_scaleX * m_originalPixPerSpd * m_heading ;
+
+    int tmp = floor(     m_heading+0.5f  );
+    int spd = tmp - ( tmp % 1);
+
+    float spd1 = (float)spd -8.0f;
+    float spd2 = (float)spd - 5.0f;
+    float spd3 = (float)spd - 2.0f;
+    float spd4 = (float)spd;
+    float spd5 = (float)spd + 2.0f;
+    float spd6 = (float)spd + 5.0f;
+    float spd7 = (float)spd + 8.0f;
+
+    while ( m_labelsDeltaY_new > m_scaleX * 38.0f )
+    {
+        m_labelsDeltaY_new = m_labelsDeltaY_new - m_scaleX * 30.0f;
+    }
+
+    if ( m_labelsDeltaY_new < 0.0 &&     m_heading  > spd4 )
+    {
+        spd1 += 1.0f;
+        spd2 += 1.0f;
+        spd3 += 1.0f;
+        spd4 += 1.0f;
+        spd5 += 1.0f;
+        spd6 += 1.0f;
+        spd7 += 1.0f;
+    }
+
+    m_itemLabel1->moveBy(  m_labelsDeltaY_new - m_labelsDeltaY_old,0.0f );
+    m_itemLabel2->moveBy( m_labelsDeltaY_new - m_labelsDeltaY_old ,0.0f );
+    m_itemLabel3->moveBy( m_labelsDeltaY_new - m_labelsDeltaY_old ,0.0f );
+    m_itemLabel4->moveBy( m_labelsDeltaY_new - m_labelsDeltaY_old ,0.0f );
+    m_itemLabel5->moveBy( m_labelsDeltaY_new - m_labelsDeltaY_old ,0.0f );
+    m_itemLabel6->moveBy( m_labelsDeltaY_new - m_labelsDeltaY_old ,0.0f );
+    m_itemLabel7->moveBy( m_labelsDeltaY_new - m_labelsDeltaY_old ,0.0f );
+
+    if ( spd1 >= 0.0f && spd1 <= 10000.0f )
+    {
+        m_itemLabel1->setVisible( true );
+        m_itemLabel1->setPlainText( QString("%1").arg(spd1, 3, 'f', 0, QChar(' ')) );
+    }
+    else
+    {
+        m_itemLabel1->setVisible( false );
+    }
+
+    if ( spd2 >= 0.0f && spd2 <= 10000.0f )
+    {
+        m_itemLabel2->setVisible( true );
+        m_itemLabel2->setPlainText( QString("%1").arg(spd2, 3, 'f', 0, QChar(' ')) );
+    }
+    else
+    {
+        m_itemLabel2->setVisible( false );
+    }
+
+    if ( spd3 >= 0.0f && spd3 <= 10000.0f )
+    {
+        m_itemLabel3->setVisible( true );
+        m_itemLabel3->setPlainText( QString("%1").arg(spd3, 3, 'f', 0, QChar(' ')) );
+    }
+    else
+    {
+        m_itemLabel3->setVisible( false );
+    }
+
+    if ( spd4 >= 0.0f && spd4 <= 10000.0f )
+    {
+        m_itemLabel4->setVisible( true );
+        m_itemLabel4->setPlainText( QString("%1").arg(spd4, 3, 'f', 0, QChar(' ')) );
+    }
+    else
+    {
+        m_itemLabel4->setVisible( false );
+    }
+
+    if ( spd5 >= 0.0f && spd5 <= 10000.0f )
+    {
+        m_itemLabel5->setVisible( true );
+        m_itemLabel5->setPlainText( QString("%1").arg(spd5, 3, 'f', 0, QChar(' ')) );
+    }
+    else
+    {
+        m_itemLabel5->setVisible( false );
+    }
+
+    if ( spd6 >= 0.0f && spd6 <= 10000.0f )
+    {
+        m_itemLabel6->setVisible( true );
+        m_itemLabel6->setPlainText( QString("%1").arg(spd6, 3, 'f', 0, QChar(' ')) );
+    }
+    else
+    {
+        m_itemLabel6->setVisible( false );
+    }
+
+    if ( spd7 >= 0.0f && spd7 <= 10000.0f )
+    {
+        m_itemLabel7->setVisible( true );
+        m_itemLabel7->setPlainText( QString("%1").arg(spd7, 3, 'f', 0, QChar(' ')) );
+    }
+    else
+    {
+        m_itemLabel7->setVisible( false );
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1772,8 +2238,8 @@ qfi_PFD::VSI::VSI( QGraphicsScene * scene ) :
     m_originalPixPerSpd2  ( 20.0f ),
     m_originalPixPerSpd4  (  5.0f ),
 
-    m_originalScalePos ( 275.0f ,  50.0f ),
-    m_originalArrowPos ( 284.0f , 124.0f ),
+    m_originalScalePos ( 280.0f ,  50.0f ),
+    m_originalArrowPos ( 280.0f , 124.0f ),
 
     m_scaleZ  ( 70 ),
     m_arrowZ  ( 80 )
@@ -1922,24 +2388,24 @@ void qfi_PFD::ILS::reset()
 
 void qfi_PFD::ILS::updateILS()
 {
-    m_itemIdentText->setPlainText( m_identifier );
-    m_itemDistText->setPlainText( QString( "%1" ).arg( m_distance, 3, 'f', 1 ) );
+//    m_itemIdentText->setPlainText( m_identifier );
+ // m_itemDistText->setPlainText( QString( "%1" ).arg( m_distance, 3, 'f', 1 ) );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 void qfi_PFD::ILS::setIdentifier( const QString &ident, bool visible )
 {
-    m_identifier = ident;
-    m_itemIdentText->setVisible( visible );
+//    m_identifier = ident;
+   // m_itemIdentText->setVisible( visible );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 void qfi_PFD::ILS::setDistance( float dist, bool visible )
 {
-    m_distance = dist;
-    m_itemDistText->setVisible( visible );
+  //  m_distance = dist;
+  // m_itemDistText->setVisible( visible );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1959,7 +2425,7 @@ void qfi_PFD::ILS::init( float scaleX, float scaleY )
     m_scaleX = scaleX;
     m_scaleY = scaleY;
 
-    reset();
+   /* reset();
 
     m_itemIdentText = new QGraphicsTextItem( QString( "999" ) );
     m_itemIdentText->setCacheMode( QGraphicsItem::NoCache );
@@ -1981,5 +2447,5 @@ void qfi_PFD::ILS::init( float scaleX, float scaleY )
                          m_scaleY * ( m_originalDistPos.y() - m_itemDistText->boundingRect().height() / 2.0f ) );
     m_scene->addItem( m_itemDistText );
 
-    update( scaleX, scaleY );
+    update( scaleX, scaleY );*/
 }

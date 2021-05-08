@@ -1,5 +1,56 @@
+/***************************************************************************//**
+ * @file qfi_PFD.h
+ * @author Marek M. Cel <marekcel@marekcel.pl>
+ * @author Dave Culp <daveculp@cox.net>
+ *
+ * @section LICENSE
+ *
+ * Copyright (C) 2018 Marek M. Cel, Dave Culp
+ *
+ * This file is part of QFlightInstruments. You can redistribute and modify it
+ * under the terms of GNU General Public License as published by the Free
+ * Software Foundation; either version 3 of the License, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.
+ * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Further information about the GNU General Public License can also be found
+ * on the world wide web at http://www.gnu.org.
+ *
+ * ---
+ *
+ * Copyright (C) 2018 Marek M. Cel, Dave Culp
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom
+ * the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included
+ * in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+ * IN THE SOFTWARE.
+ ******************************************************************************/
 #ifndef QFI_PFD_H
 #define QFI_PFD_H
+
+////////////////////////////////////////////////////////////////////////////////
+
 #include <QGraphicsView>
 #include <QGraphicsSvgItem>
 
@@ -104,6 +155,10 @@ public:
     {
         m_alt->setAltitude( altitude );
     }
+    inline void defineAltitude( float altitude )
+    {
+        m_alt->defineAltitude( altitude );
+    }
 
     /**
      * @param pressure (dimensionless numeric value)
@@ -190,7 +245,7 @@ private:
         QGraphicsSvgItem *m_itemMask;
         QGraphicsSvgItem *m_itemScaleH;
         QGraphicsSvgItem *m_itemScaleV;
-
+        QGraphicsSvgItem *m_itemBar;
         float m_roll;
         float m_pitch;
         float m_angleOfAttack;
@@ -201,7 +256,7 @@ private:
         float m_barV;
         float m_dotH;
         float m_dotV;
-
+        float m_bar;
         bool m_pathValid;
 
         bool m_pathVisible;
@@ -209,6 +264,7 @@ private:
         bool m_barVVisible;
         bool m_dotHVisible;
         bool m_dotVVisible;
+        bool m_barVisible;
 
         float m_laddDeltaX_new;
         float m_laddDeltaX_old;
@@ -218,6 +274,17 @@ private:
         float m_laddBackDeltaY_old;
         float m_laddDeltaY_new;
         float m_laddDeltaY_old;
+
+        float m_barDeltaX_new;
+        float m_barDeltaX_old;
+        float m_barBackDeltaX_new;
+        float m_barBackDeltaX_old;
+        float m_barBackDeltaY_new;
+        float m_barBackDeltaY_old;
+        float m_barDeltaY_new;
+        float m_barDeltaY_old;
+
+
         float m_slipDeltaX_new;
         float m_slipDeltaX_old;
         float m_slipDeltaY_new;
@@ -247,15 +314,22 @@ private:
         const float m_originalPixPerDeg;
         const float m_deltaLaddBack_max;
         const float m_deltaLaddBack_min;
+
+        const float m_deltabar_max;
+        const float m_deltabar_min;
+
         const float m_maxSlipDeflection;
         const float m_maxTurnDeflection;
         const float m_maxBarsDeflection;
         const float m_maxDotsDeflection;
 
+
         QPointF m_originalAdiCtr;
         QPointF m_originalBackPos;
         QPointF m_originalLaddPos;
         QPointF m_originalRollPos;
+        QPointF m_originalMaskPos;
+        QPointF m_originalBarPos;
         QPointF m_originalSlipPos;
         QPointF m_originalTurnPos;
         QPointF m_originalPathPos;
@@ -276,6 +350,7 @@ private:
         const int m_scalesZ;
         const int m_maskZ;
         const int m_turnZ;
+        const int m_barZ;
 
         void reset();
         void updateLadd( float delta, float sinRoll, float cosRoll );
@@ -284,7 +359,7 @@ private:
         void updateSlipSkid( float sinRoll, float cosRoll );
         void updateTurnRate();
         void updateFlightPath();
-        void updateBars();
+        void updateBars(float delta1,float sinRoll,float cosRoll);
         void updateDots();
     };
 
@@ -297,7 +372,7 @@ private:
         void update( float scaleX, float scaleY );
         void setAltitude( float altitude );
         void setPressure( float pressure, int pressureUnit );
-
+        void defineAltitude(float altitude);
     private:
 
         QGraphicsScene *m_scene;
@@ -312,17 +387,17 @@ private:
         QGraphicsSvgItem  *m_itemFrame;
         QGraphicsTextItem *m_itemAltitude;
         QGraphicsTextItem *m_itemPressure;
-
+        QGraphicsTextItem *m_itemsetAltitude;
         QColor m_frameTextColor;
         QColor m_pressTextColor;
         QColor m_labelsColor;
-
+        QColor m_setColor;
         QFont  m_frameTextFont;
         QFont  m_labelsFont;
 
         float m_altitude;
         float m_pressure;
-
+        float m_setaltitude;
         int m_pressureUnit;
 
         float m_scale1DeltaY_new;
@@ -351,7 +426,7 @@ private:
         QPointF m_originalFramePos;
         QPointF m_originalAltitudeCtr;
         QPointF m_originalPressureCtr;
-
+    QPointF m_originalsetAlitudeCtr;
         const int m_backZ;
         const int m_scaleZ;
         const int m_labelsZ;
@@ -364,6 +439,7 @@ private:
         void updatePressure();
         void updateScale();
         void updateScaleLabels();
+        void updatesetAltitude();
     };
 
     class ASI
@@ -395,6 +471,8 @@ private:
         QGraphicsTextItem *m_itemMachNo;
 
         QColor m_frameTextColor;
+        QColor m_framemachColor;
+
         QColor m_labelsColor;
 
         QFont  m_frameTextFont;
@@ -451,7 +529,7 @@ private:
         void init( float scaleX, float scaleY );
         void update( float scaleX, float scaleY );
         void setHeading( float heading );
-
+        void updateScale();
     private:
 
         QGraphicsScene *m_scene;
@@ -460,29 +538,69 @@ private:
         QGraphicsSvgItem  *m_itemFace;
         QGraphicsSvgItem  *m_itemMarks;
         QGraphicsTextItem *m_itemFrameText;
+        QGraphicsSvgItem *m_itemScale1;
+        QGraphicsSvgItem  *m_itemScale2;
+        QGraphicsTextItem *m_itemLabel1;
+        QGraphicsTextItem *m_itemLabel2;
+        QGraphicsTextItem *m_itemLabel3;
+        QGraphicsTextItem *m_itemLabel4;
+        QGraphicsTextItem *m_itemLabel5;
+        QGraphicsTextItem *m_itemLabel6;
+        QGraphicsTextItem *m_itemLabel7;
+        QGraphicsSvgItem  *m_itemFrame;
+
+
+
+        float m_scale1DeltaY_new;
+        float m_scale1DeltaY_old;
+        float m_scale2DeltaY_new;
+        float m_scale2DeltaY_old;
+        float m_labelsDeltaY_new;
+        float m_labelsDeltaY_old;
 
         QColor m_frameTextColor;
+        QColor m_labelsColor;
+
 
         QFont  m_frameTextFont;
 
+        QFont  m_labelsFont;
         float m_heading;
 
         float m_scaleX;
         float m_scaleY;
+
+
+        const float m_originalPixPerSpd;
+        const float m_originalScaleHeight;
+        const float m_originalLabelsX;
+        const float m_originalLabel1Y;
+        const float m_originalLabel2Y;
+        const float m_originalLabel3Y;
+        const float m_originalLabel4Y;
+        const float m_originalLabel5Y;
+        const float m_originalLabel6Y;
+        const float m_originalLabel7Y;
 
         QPointF m_originalHsiCtr;
         QPointF m_originalBackPos;
         QPointF m_originalFacePos;
         QPointF m_originalMarksPos;
         QPointF m_originalFrameTextCtr;
-
+         QPointF m_originalFramePos;
+        QPointF m_originalScale1Pos;
+        QPointF m_originalScale2Pos;
         const int m_backZ;
         const int m_faceZ;
         const int m_marksZ;
         const int m_frameTextZ;
+        const int m_scaleZ;
+        const int m_labelsZ;
+        const int m_frameZ;
 
         void reset();
         void updateHeading();
+        void updateScaleLabels();
     };
 
     class VSI
@@ -572,10 +690,10 @@ private:
     HSI *m_hsi;
     VSI *m_vsi;
     ILS *m_ils;
-
+    ALT *m_alt1;
     QGraphicsSvgItem *m_itemBack;
     QGraphicsSvgItem *m_itemMask;
-
+QGraphicsSvgItem *m_itemMask1;
     float m_scaleX;
     float m_scaleY;
 
