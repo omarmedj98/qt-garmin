@@ -40,7 +40,7 @@ qfi_NAV::qfi_NAV( QWidget *parent ) :
 
     m_crsTextColor (   0, 255,   0 ),
     m_hdgTextColor ( 255,   0, 255 ),
-    m_dmeTextColor (52, 152, 219 ),
+    m_dmeTextColor (129, 206, 238 ),
 
     m_heading    ( 0.0f ),
     m_headingBug ( 0.0f ),
@@ -65,7 +65,8 @@ qfi_NAV::qfi_NAV( QWidget *parent ) :
 
     m_originalNavCtr ( 150.0f, 150.0f ),
 
-    m_originalCrsTextCtr (  50.0f,  275.0f ),
+    m_originalCrsTextCtr (  50.0f,  277.0f ),
+
     m_originalHdgTextCtr ( 250.0f,  25.0f ),
     m_originalDmeTextCtr ( 250.0f, 275.0f ),
 
@@ -304,7 +305,7 @@ void qfi_NAV::init()
 
     m_itemCrsText = 0;
 
-    m_itemCrsText = new QGraphicsTextItem( QString( "CRS 999" ) );
+    m_itemCrsText = new QGraphicsTextItem( QString( "999" ) );
     m_itemCrsText->setCacheMode( QGraphicsItem::NoCache );
     m_itemCrsText->setZValue( m_crsTextZ );
     m_itemCrsText->setDefaultTextColor( m_crsTextColor );
@@ -314,7 +315,7 @@ void qfi_NAV::init()
                            m_scaleY * ( m_originalCrsTextCtr.y() - m_itemCrsText->boundingRect().height() / 2.0f ) );
     m_scene->addItem( m_itemCrsText );
 
-    m_itemHdgText = new QGraphicsTextItem( QString( "HDG 999" ) );
+ /*   m_itemHdgText = new QGraphicsTextItem( QString( "HDG 999" ) );
     m_itemHdgText->setCacheMode( QGraphicsItem::NoCache );
     m_itemHdgText->setZValue( m_hdgTextZ );
     m_itemHdgText->setDefaultTextColor( m_hdgTextColor );
@@ -323,12 +324,12 @@ void qfi_NAV::init()
     m_itemHdgText->moveBy( m_scaleX * ( m_originalHdgTextCtr.x() - m_itemHdgText->boundingRect().width()  / 2.0f ),
                            m_scaleY * ( m_originalHdgTextCtr.y() - m_itemHdgText->boundingRect().height() / 2.0f ) );
     m_scene->addItem( m_itemHdgText );
-
-    m_itemDmeText = new QGraphicsTextItem( QString( "99.9 NM" ) );
+*/
+    m_itemDmeText = new QGraphicsTextItem( QString( "999" ) );
     m_itemDmeText->setCacheMode( QGraphicsItem::NoCache );
     m_itemDmeText->setZValue( m_dmeTextZ );
     m_itemDmeText->setDefaultTextColor( m_dmeTextColor );
-    m_itemDmeText->setFont( m_dmeTextFont );
+    m_itemDmeText->setFont( m_hdgTextFont );
     m_itemDmeText->setTransform( QTransform::fromScale( m_scaleX, m_scaleY ), true );
     m_itemDmeText->moveBy( m_scaleX * ( m_originalDmeTextCtr.x() - m_itemDmeText->boundingRect().width()  / 2.0f ),
                            m_scaleY * ( m_originalDmeTextCtr.y() - m_itemDmeText->boundingRect().height() / 2.0f ) );
@@ -425,13 +426,13 @@ void qfi_NAV::updateView()
         m_devBarDeltaY_new = m_devBarDeltaY_old;
     }
 
-    m_itemCrsText->setPlainText( QString("CRS %1").arg( m_course     , 3, 'f', 0, QChar('0') ) );
-    m_itemHdgText->setPlainText( QString("HDG %1").arg( m_headingBug , 3, 'f', 0, QChar('0') ) );
+    m_itemCrsText->setPlainText( QString(" %1").arg( m_course     , 3, 'f', 0, QChar('0') ) );
+  //  m_itemHdgText->setPlainText( QString("HDG %1").arg( m_headingBug , 3, 'f', 0, QChar('0') ) );
 
     if ( m_distanceVisible )
     {
         m_itemDmeText->setVisible( true );
-        m_itemDmeText->setPlainText( QString("%1 °").arg( m_distance, 5, 'f', 1, QChar(' ') ) );
+        m_itemDmeText->setPlainText( QString("%1°").arg(m_headingBug, 3, 'f', 0, QChar('0') ) );
     }
     else
     {
